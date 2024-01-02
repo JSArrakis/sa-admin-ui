@@ -12,5 +12,8 @@
   "license": "LGPL-3.0-or-later",
   "devDependencies": {
     "electron": "^28.1.0"
+  },
+  "dependencies": {
+    "jquery": "^3.7.1"
   }
 }
