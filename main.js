@@ -10,6 +10,7 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false
         },
+        autoHideMenuBar: true
     });
 
     mainWindow.loadFile('index.html');
@@ -25,16 +26,16 @@ app.whenReady().then(() => {
 
     ipcMain.on('open-file-dialog', async (event) => {
         const result = await dialog.showOpenDialog(mainWindow, {
-            properties: ['openFile'],
+            properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Text Files', extensions: ['txt'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
 
         if (!result.canceled) {
             // Send the selected file path to the renderer process
-            event.sender.send('selected-file', result.filePaths[0]);
+            event.sender.send('selected-files', result.filePaths);
         }
     });
 

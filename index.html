@@ -4,13 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electron Button Example</title>
+    <link rel="stylesheet" href="styles.css">
+    <title>Stream Assistant Admin</title>
 </head>
 
 <body>
-    <button id="myButton">Click me</button>
-    <button id="openFileButton">Open File</button>
-    <div id="fileContent"></div>
+    <div class="main">
+        <div class="side-nav">
+            <ul class="nav-links">
+                <li><a id="shows-button" href="#">
+                        <p>Shows</p>
+                    </a></li>
+                <li><a id="movies-button" href="#">
+                        <p>Movies</p>
+                    </a></li>
+                <li><a id="buffer-button" href="#">
+                        <p>Buffer Media</p>
+                    </a></li>
+                <div class="active"></div>
+            </ul>
+        </div>
+        <div class="content" id="fileContent"></div>
+    </div>
+    <!-- <button id="myButton">Click me</button>
+    <button id="openFileButton">Open File</button> -->
+
 
     <script src="renderer.js"></script>
 </body>
