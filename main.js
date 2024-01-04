@@ -24,6 +24,8 @@ function createWindow() {
 app.whenReady().then(() => {
     createWindow();
 
+    mainWindow.webContents.send('load-drives');
+
     ipcMain.on('open-file-dialog', async (event) => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
@@ -36,6 +38,20 @@ app.whenReady().then(() => {
         if (!result.canceled) {
             // Send the selected file path to the renderer process
             event.sender.send('selected-files', result.filePaths);
+        }
+    });
+
+    ipcMain.on('open-drive-dialog', async (event) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openDirectory'],
+            filters: [
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+
+        if (!result.canceled) {
+            // Send the selected file path to the renderer process
+            event.sender.send('selected-drive', result.filePaths[0]);
         }
     });
 
