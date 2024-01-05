@@ -18,13 +18,14 @@ function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
-
 }
 
 app.whenReady().then(() => {
     createWindow();
 
-    mainWindow.webContents.send('load-drives');
+    mainWindow.webContents.send('load-profile');
+
+    mainWindow.webContents.send('load-home');
 
     ipcMain.on('open-file-dialog', async (event) => {
         const result = await dialog.showOpenDialog(mainWindow, {
@@ -37,7 +38,7 @@ app.whenReady().then(() => {
 
         if (!result.canceled) {
             // Send the selected file path to the renderer process
-            event.sender.send('selected-files', result.filePaths);
+            event.sender.send('selected-episodes', result.filePaths);
         }
     });
 
@@ -62,7 +63,4 @@ app.whenReady().then(() => {
     app.on('activate', function () {
         if (mainWindow === null) createWindow();
     });
-
-
 });
-

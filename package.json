@@ -11,7 +11,9 @@
   "author": "JSArrakis",
   "license": "LGPL-3.0-or-later",
   "devDependencies": {
-    "electron": "^28.1.0"
+    "axios": "^1.6.4",
+    "electron": "^28.1.1",
+    "uuid": "^9.0.1"
   },
   "dependencies": {
     "jquery": "^3.7.1"
