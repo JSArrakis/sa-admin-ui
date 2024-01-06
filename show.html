@@ -1,12 +1,29 @@
-<div>
-    <h1>Shows</h1>
-    <input id="show-title" type="text" name="Title" placeholder="Show Title">
-    <button id="check-title-button">Check</button>
-    <input id="show-tags" type="text" name="Tags" placeholder="Show Tags" disabled>
-    <button id="show-files-button" disabled>Select Episodes</button>
-    <div><input id="localize-remote-files" type="checkbox" name="Localize" disabled><span>Localize Remote File
-            Paths</span></div>
-    <button id="show-submit-button" disabled>Submit</button>
-    <div id="episodes-selection"></div>
-    <div id="show-page-error"></div>
+<div class="show-content">
+    <h3 class="bold-text center-vertical">SHOWS</h3>
+    <div class="center-vertical space-between show-data">
+        <div class="small-text">Title</div>
+        <div></div>
+        <div></div>
+        <div class="small-text">Genre Tags</div>
+        <div></div>
+        <div></div>
+
+
+        <input id="show-title" type="text" name="Title" placeholder="Samurai Jack">
+        <button id="check-title-button">Check</button>
+        <div></div>
+        <input id="show-tags" type="text" name="Tags" placeholder="nickelodeon, animated, 2000s" disabled>
+        <div></div>
+        <button id="show-files-button" disabled>Select Episodes</button>
+    </div>
+    <div class="center-vertical small-horz-padding">
+        <input id="localize-remote-files" type="checkbox" name="Localize" disabled>
+        <span class="small-text small-horz-padding">Localize Remote File Paths</span>
+    </div>
+    <div id="episodes-selection" class="content-window"></div>
+    <div class="space-between small-horz-padding">
+        <button id="clear-button" disabled>Clear</button>
+        <button id="show-submit-button" disabled>Submit</button>
+    </div>
+    <div id="show-page-error" class="center-vertical"></div>
 </div>

@@ -46,7 +46,10 @@ document.getElementById('shows-button').addEventListener('click', async function
 
         document.getElementById('check-title-button').addEventListener('click', async function () {
             let getShowResult = await getShowFromAPI(document.getElementById('show-title').value);
+            console.log("GET SHOW RESULT")
+            console.log(getShowResult)
             if (getShowResult[0] !== null) {
+                console.log("SHOW FOUND")
                 showExists = true;
                 document.getElementById('show-tags').disabled = false;
                 document.getElementById('show-files-button').disabled = false;
@@ -66,11 +69,11 @@ document.getElementById('shows-button').addEventListener('click', async function
                     let fileDiv = document.createElement('div');
                     let episodeObject = { uuid: uuid, filePath: episode.Path, episode: episode.EpisodeNumber };
                     fileDiv.innerHTML = `
-                        <div id=${uuid}>
-                            <button id=${"button-" + uuid}>X</button>
-                            <div>Episode</div>
-                            <input class="number-input" type="number" name="episode" value=${episode.EpisodeNumber}>
-                            <div>${episode.filePath}</div>
+                        <div class="selection-entry" id=${uuid}>
+                            <div class="clickable remove-button" id=${"button-" + uuid}>&#x2716;</div>
+                            <div class="ep-number small-text tiny-horz-padding">Ep.</div>
+                            <input class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=${episode.EpisodeNumber}>
+                            <div class="scrollable-div small-text small-horz-padding">${episode.Path}</div>
                         </div>`;
                     targetDiv.appendChild(fileDiv);
                     episodeList.push(episodeObject);
@@ -84,6 +87,7 @@ document.getElementById('shows-button').addEventListener('click', async function
                 });
 
             } else if (getShowResult[1] === "Show does not exist") {
+                console.log("SHOW NOT FOUND")
                 document.getElementById('show-tags').disabled = false;
                 document.getElementById('show-files-button').disabled = false;
                 document.getElementById('localize-remote-files').disabled = false;
@@ -95,6 +99,9 @@ document.getElementById('shows-button').addEventListener('click', async function
         });
 
         document.getElementById('show-submit-button').addEventListener('click', async function () {
+
+
+
             // if (showExists) {
             //     await axios.put('http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/updateShow', {
             //         //TODO: add show data
@@ -248,7 +255,7 @@ ipcRenderer.on('selected-episodes', (event, filePaths) => {
 });
 
 ipcRenderer.on('load-profile', async (event) => {
-    console.log('Loading drives...');
+    console.log('Loading profile...');
     let fileContent = await fs.readFile('./profile.json', 'utf-8');
 
     // Parse the JSON content
@@ -288,6 +295,9 @@ ipcRenderer.on('selected-drive', async (event, drive) => {
 });
 
 async function getShowFromAPI(title) {
+    let show = null;
+    let errorMessage = null;
+
     if (instanceProfile.host === "" || instanceProfile.port === 0) {
         return [null, "No connection info set in settings"];
     }
@@ -300,23 +310,21 @@ async function getShowFromAPI(title) {
     let loadTitle = title.toLowerCase().replace(/\s/g, '').replace(/[^\w\s]/gi, '');
     await axios.get('http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/getShow?loadTitle=' + loadTitle)
         .then(response => {
-            console.log("RESPONSE")
             if (response.data.message) {
-                return [null, response.data.message];
+                errorMessage = response.data.message;
             } else {
-                return [response.data, null];
+                show = response.data;
             }
         })
         .catch(error => {
-            document.getElementById('show-page-error').innerText = error.message;
+            errorMessage = error.message;
         });
     document.getElementById('home-button').disabled = false;
     document.getElementById('shows-button').disabled = false;
     document.getElementById('movies-button').disabled = false;
     document.getElementById('buffer-button').disabled = false;
     document.getElementById('settings-button').disabled = false;
-
-    return [null, null];
+    return [show, errorMessage];
 }
 
 async function possiblySetProfile() {
