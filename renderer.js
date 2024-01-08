@@ -9,6 +9,8 @@ let instanceProfile = {
 };
 let episodeList = [];
 let showExists = false;
+let localizeShowPaths = false;
+let hideShowPaths = false;
 
 document.getElementById('home-button').addEventListener('click', async function () {
     possiblySetProfile();
@@ -44,18 +46,117 @@ document.getElementById('shows-button').addEventListener('click', async function
             ipcRenderer.send('open-file-dialog');
         });
 
+        document.getElementById('show-title').addEventListener('focus', function () {
+            document.getElementById('show-title').style.backgroundColor = "";
+        });
+
+        document.getElementById('clear-button').addEventListener('click', function () {
+            clearfileSelection();
+            document.getElementById('show-tags').value = "";
+            document.getElementById('show-title').value = "";
+            document.getElementById('show-title').disabled = false;
+            document.getElementById('show-tags').disabled = true;
+            document.getElementById('show-files-button').disabled = true;
+            document.getElementById('localize-remote-files').disabled = true;
+            document.getElementById('show-submit-button').disabled = true;
+            document.getElementById('show-submit-button').innerText = "Submit";
+            document.getElementById('show-page-error').innerText = "";
+            document.getElementById('show-title').style.backgroundColor = "";
+            document.getElementById('clear-button').disabled = true;
+        });
+
+        document.getElementById('hide-file-paths').addEventListener('click', function () {
+            hideShowPaths = !hideShowPaths;
+            if (hideShowPaths) {
+                episodeList.forEach((episode) => {
+                    document.getElementById('path-' + episode.uuid).innerText = episode.file;
+                });
+            } else {
+                episodeList.forEach((episode) => {
+                    document.getElementById('path-' + episode.uuid).innerText = episode.filePath;
+                });
+            }
+        });
+
+        document.getElementById('localize-remote-files').addEventListener('click', function () {
+            localizeShowPaths = !localizeShowPaths;
+            if (localizeShowPaths) {
+                //For each episode, transform the path to a local path
+                episodeList.forEach((episode) => {
+                    episode = transformPath(episode, instanceProfile.drives);
+                    if (episode.basePath === "") {
+                        if (hideShowPaths) {
+                            document.getElementById("path-" + episode.uuid).innerText = episode.file;
+                        } else {
+                            document.getElementById("path-" + episode.uuid).innerText = episode.filePath;
+                        }
+
+                        document.getElementById('path-group-' + episode.uuid).classList.remove('episode-path-group-no-icon');
+                        document.getElementById('path-group-' + episode.uuid).classList.add('episode-path-group')
+                        document.getElementById('path-warning-' + episode.uuid).innerText = '\u26A0'
+
+                    } else {
+                        if (hideShowPaths) {
+                            document.getElementById("path-" + episode.uuid).innerText = episode.file;
+                        } else {
+                            document.getElementById("path-" + episode.uuid).innerText = episode.filePath;
+                        }
+                    }
+                });
+            } else {
+                //For each episode, reverse path transformation to the original path
+                episodeList.forEach((episode) => {
+                    if (episode.basePath === "") {
+                        document.getElementById('path-group-' + episode.uuid).classList.remove('episode-path-group');
+                        document.getElementById('path-group-' + episode.uuid).classList.add('episode-path-group-no-icon')
+                        document.getElementById('path-warning-' + episode.uuid).innerText = ""
+                    }
+                    episode = reverseTransformPath(episode);
+                    if (hideShowPaths) {
+                        document.getElementById("path-" + episode.uuid).innerText = episode.file;
+                    } else {
+                        document.getElementById("path-" + episode.uuid).innerText = episode.filePath;
+                    }
+                });
+            }
+        });
+
         document.getElementById('check-title-button').addEventListener('click', async function () {
-            let getShowResult = await getShowFromAPI(document.getElementById('show-title').value);
-            console.log("GET SHOW RESULT")
-            console.log(getShowResult)
+            let titleElement = document.getElementById('show-title');
+            document.getElementById('show-page-error').innerText = "";
+            let title = titleElement.value;
+            if (title === "") {
+                let showPageError = document.getElementById('show-page-error');
+                let warningIcon = document.createElement('div');
+                warningIcon.classList.add('warning-icon', 'glow-animation');
+                warningIcon.innerHTML = '&#9888;';
+
+                // Set the text content for the warning
+                let warningText = document.createTextNode("Title cannot be empty");
+
+                // Insert the warning icon and text into the show-page-error div
+                showPageError.appendChild(warningIcon);
+                showPageError.appendChild(warningText);
+                titleElement.style.backgroundColor = "#ff0000";
+                return;
+            }
+            let getShowResult = await getShowFromAPI(title);
+            console.log("GET SHOW RESULT");
+            console.log(getShowResult);
+            console.log("GET SHOW RESULT");
             if (getShowResult[0] !== null) {
                 console.log("SHOW FOUND")
                 showExists = true;
                 document.getElementById('show-tags').disabled = false;
                 document.getElementById('show-files-button').disabled = false;
                 document.getElementById('localize-remote-files').disabled = false;
+                document.getElementById('hide-file-paths').disabled = false;
                 document.getElementById('show-submit-button').innerText = "Update";
                 document.getElementById('show-submit-button').disabled = false;
+                document.getElementById('clear-button').disabled = false;
+                titleElement.value = getShowResult[0].Title;
+                titleElement.style.backgroundColor = "#ffff00";
+                titleElement.disabled = true;
                 //concatenate tags with a comma separator
                 let tags = "";
                 getShowResult[0].Tags.forEach((tag) => {
@@ -67,16 +168,21 @@ document.getElementById('shows-button').addEventListener('click', async function
                 getShowResult[0].Episodes.forEach((episode) => {
                     let uuid = uuidv4();
                     let fileDiv = document.createElement('div');
-                    let episodeObject = { uuid: uuid, filePath: episode.Path, episode: episode.EpisodeNumber };
+                    let episodeObject = { uuid: uuid, filePath: episode.Path, basePath: "", file: separatePath(episode.Path), episode: episode.EpisodeNumber };
+                    let transformedEpisode = localizeShowPaths ? transformPath(episodeObject, instanceProfile.drives) : episodeObject;
+                    let episodePath = hideShowPaths ? transformedEpisode.file : transformedEpisode.filePath;
                     fileDiv.innerHTML = `
-                        <div class="selection-entry" id=${uuid}>
-                            <div class="clickable remove-button" id=${"button-" + uuid}>&#x2716;</div>
+                        <div class="selection-entry micro-padding" id=${uuid}>
+                            <div class="remove-button" id=${"button-" + uuid}>&#x2716;</div>
                             <div class="ep-number small-text tiny-horz-padding">Ep.</div>
-                            <input class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=${episode.EpisodeNumber}>
-                            <div class="scrollable-div small-text small-horz-padding">${episode.Path}</div>
+                            <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=${episode.EpisodeNumber}>
+                            <div id=${"path-group-" + uuid} class="episode-path-group-no-icon">
+                                <div id=${"path-warning-" + uuid} class="episode-warning" title="Path not transformed from localization"></div>
+                                <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
+                            </div>
                         </div>`;
                     targetDiv.appendChild(fileDiv);
-                    episodeList.push(episodeObject);
+                    episodeList.push(transformedEpisode);
 
                     document.getElementById("button-" + uuid).addEventListener('click', function () {
                         document.getElementById(uuid).remove();
@@ -86,15 +192,21 @@ document.getElementById('shows-button').addEventListener('click', async function
                     });
                 });
 
-            } else if (getShowResult[1] === "Show does not exist") {
+            } else if (getShowResult[1].response && getShowResult[1].response.status === 404) {
                 console.log("SHOW NOT FOUND")
                 document.getElementById('show-tags').disabled = false;
                 document.getElementById('show-files-button').disabled = false;
                 document.getElementById('localize-remote-files').disabled = false;
+                document.getElementById('hide-file-paths').disabled = false;
                 document.getElementById('show-submit-button').innerText = "Submit";
                 document.getElementById('show-submit-button').disabled = false;
+                document.getElementById('clear-button').disabled = false;
+                titleElement.style.backgroundColor = "#00ff00";
+                titleElement.disabled = true;
             } else {
+                document.getElementById('check-title-button').disabled = false;
                 document.getElementById('show-page-error').innerText = getShowResult[1];
+                titleElement.style.backgroundColor = "#ff0000";
             }
         });
 
@@ -158,12 +270,80 @@ document.getElementById('movies-button').addEventListener('click', async functio
 
 });
 
-document.getElementById('buffer-button').addEventListener('click', async function () {
+document.getElementById('shorts-button').addEventListener('click', async function () {
     possiblySetProfile();
     console.log('Loading content...');
     try {
         // Use await with fs.promises.readFile to read the file content
-        let fileContent = await fs.readFile('./buffer.html', 'utf-8');
+        let fileContent = await fs.readFile('./short.html', 'utf-8');
+
+        // Update the main-content div with the loaded content
+        document.getElementById('fileContent').innerHTML = fileContent;
+
+        // Log a message to the console
+        console.log('Content loaded');
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+document.getElementById('music-button').addEventListener('click', async function () {
+    possiblySetProfile();
+    console.log('Loading content...');
+    try {
+        // Use await with fs.promises.readFile to read the file content
+        let fileContent = await fs.readFile('./music.html', 'utf-8');
+
+        // Update the main-content div with the loaded content
+        document.getElementById('fileContent').innerHTML = fileContent;
+
+        // Log a message to the console
+        console.log('Content loaded');
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+document.getElementById('commercials-button').addEventListener('click', async function () {
+    possiblySetProfile();
+    console.log('Loading content...');
+    try {
+        // Use await with fs.promises.readFile to read the file content
+        let fileContent = await fs.readFile('./commercial.html', 'utf-8');
+
+        // Update the main-content div with the loaded content
+        document.getElementById('fileContent').innerHTML = fileContent;
+
+        // Log a message to the console
+        console.log('Content loaded');
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+document.getElementById('promos-button').addEventListener('click', async function () {
+    possiblySetProfile();
+    console.log('Loading content...');
+    try {
+        // Use await with fs.promises.readFile to read the file content
+        let fileContent = await fs.readFile('./promo.html', 'utf-8');
+
+        // Update the main-content div with the loaded content
+        document.getElementById('fileContent').innerHTML = fileContent;
+
+        // Log a message to the console
+        console.log('Content loaded');
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+document.getElementById('collections-button').addEventListener('click', async function () {
+    possiblySetProfile();
+    console.log('Loading content...');
+    try {
+        // Use await with fs.promises.readFile to read the file content
+        let fileContent = await fs.readFile('./collection.html', 'utf-8');
 
         // Update the main-content div with the loaded content
         document.getElementById('fileContent').innerHTML = fileContent;
@@ -233,15 +413,26 @@ ipcRenderer.on('selected-episodes', (event, filePaths) => {
         if (episodeList.filter((episode) => { return episode.filePath === filePath }).length === 0) {
             let uuid = uuidv4();
             let fileDiv = document.createElement('div');
-            let episodeObject = { uuid: uuid, filePath: filePath, episode: 0 };
+            let episodeObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), episode: 0 };
+            episodeObject = localizeShowPaths ? transformPath(episodeObject, instanceProfile.drives) : episodeObject;
+            let episodePath = hideShowPaths ? episodeObject.file : episodeObject.filePath;
             fileDiv.innerHTML = `
-                <div id=${uuid}>
-                    <button id=${"button-" + uuid}>X</button>
-                    <div>Episode</div>
-                    <input class="number-input" type="number" name="episode">
-                    <div>${filePath}</div>
-                </div>`;
+                        <div class="selection-entry micro-padding" id=${uuid}>
+                            <div class="remove-button" id=${"button-" + uuid}>&#x2716;</div>
+                            <div class="ep-number small-text tiny-horz-padding">Ep.</div>
+                            <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=0>
+                            <div id=${"path-group-" + uuid} class="episode-path-group-no-icon">
+                                <div id=${"path-warning-" + uuid} class="episode-warning" title="Path not transformed from localization"></div>
+                                <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
+                            </div>
+                        </div>`;
             targetDiv.appendChild(fileDiv);
+            if (localizeShowPaths && episodeObject.basePath === "") {
+                document.getElementById('path-group-' + uuid).classList.remove('episode-path-group-no-icon');
+                document.getElementById('path-group-' + uuid).classList.add('episode-path-group')
+                document.getElementById('path-warning-' + uuid).innerText = '\u26A0'
+            }
+
             episodeList.push(episodeObject);
 
             document.getElementById("button-" + uuid).addEventListener('click', function () {
@@ -296,7 +487,7 @@ ipcRenderer.on('selected-drive', async (event, drive) => {
 
 async function getShowFromAPI(title) {
     let show = null;
-    let errorMessage = null;
+    let error = null;
 
     if (instanceProfile.host === "" || instanceProfile.port === 0) {
         return [null, "No connection info set in settings"];
@@ -304,27 +495,33 @@ async function getShowFromAPI(title) {
     document.getElementById('home-button').disabled = true;
     document.getElementById('shows-button').disabled = true;
     document.getElementById('movies-button').disabled = true;
-    document.getElementById('buffer-button').disabled = true;
+    document.getElementById('shorts-button').disabled = true;
+    document.getElementById('music-button').disabled = true;
+    document.getElementById('commercials-button').disabled = true;
+    document.getElementById('promos-button').disabled = true;
+    document.getElementById('collections-button').disabled = true;
     document.getElementById('settings-button').disabled = true;
+    document.getElementById('check-title-button').disabled = true;
     //make title lowercase, remove spaces, and remove special characters
     let loadTitle = title.toLowerCase().replace(/\s/g, '').replace(/[^\w\s]/gi, '');
-    await axios.get('http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/getShow?loadTitle=' + loadTitle)
+    let requestPath = 'http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/getShow?loadTitle=' + loadTitle;
+    await axios.get(requestPath)
         .then(response => {
-            if (response.data.message) {
-                errorMessage = response.data.message;
-            } else {
-                show = response.data;
-            }
+            show = response.data;
         })
-        .catch(error => {
-            errorMessage = error.message;
+        .catch(err => {
+            error = err;
         });
     document.getElementById('home-button').disabled = false;
     document.getElementById('shows-button').disabled = false;
     document.getElementById('movies-button').disabled = false;
-    document.getElementById('buffer-button').disabled = false;
+    document.getElementById('shorts-button').disabled = false;
+    document.getElementById('music-button').disabled = true;
+    document.getElementById('commercials-button').disabled = false;
+    document.getElementById('promos-button').disabled = false;
+    document.getElementById('collections-button').disabled = false;
     document.getElementById('settings-button').disabled = false;
-    return [show, errorMessage];
+    return [show, error];
 }
 
 async function possiblySetProfile() {
@@ -337,4 +534,53 @@ async function possiblySetProfile() {
             console.log('Saved!');
         });
     }
+}
+
+async function clearfileSelection() {
+    episodeList = [];
+    document.getElementById('episodes-selection').innerHTML = "";
+    if (localizeShowPaths) {
+        document.getElementById('localize-remote-files').click();
+    }
+    document.getElementById('localize-remote-files').disabled = true;
+    if (hideShowPaths) {
+        document.getElementById('hide-file-paths').click();
+    }
+    document.getElementById('hide-file-paths').disabled = true;
+    document.getElementById('check-title-button').disabled = false;
+    document.getElementById('show-page-error').innerText = "";
+}
+
+function transformPath(episode, basePathArray) {
+    let transformedEpisode = episode
+
+    // Iterate through the base paths and check if the inputPath starts with any of them
+    for (const basePath of basePathArray) {
+        if (episode.filePath.startsWith(basePath)) {
+            // Replace the matching part with the corresponding drive letter
+            transformedEpisode.filePath = episode.filePath.replace(basePath, `${basePath.slice(-1)}:`.toUpperCase());
+            transformedEpisode.basePath = basePath;
+            break;
+        }
+    }
+
+    return transformedEpisode;
+}
+
+function reverseTransformPath(episode) {
+    unTransformedEpisode = episode;
+    // Remove the drive letter and replace it with the original base path
+    if (episode.basePath === "") {
+        return unTransformedEpisode;
+    }
+    unTransformedEpisode.filePath = episode.filePath.replace(/^[a-zA-Z]:/, episode.basePath);
+    unTransformedEpisode.basePath = "";
+
+    return unTransformedEpisode;
+}
+
+function separatePath(path) {
+    let pathArray = path.split("\\");
+    let fileName = pathArray.pop();
+    return fileName;
 }

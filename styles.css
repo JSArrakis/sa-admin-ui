@@ -97,23 +97,39 @@ body {
 }
 
 .nav-links li:nth-child(1):hover~.active {
-    top: 2%;
+    top: 1.3%;
 }
 
 .nav-links li:nth-child(2):hover~.active {
-    top: 22%;
+    top: 12.41%;
 }
 
 .nav-links li:nth-child(3):hover~.active {
-    top: 42%;
+    top: 23.52%;
 }
 
 .nav-links li:nth-child(4):hover~.active {
-    top: 62%;
+    top: 34.63%;
 }
 
 .nav-links li:nth-child(5):hover~.active {
-    top: 82%;
+    top: 45.74%;
+}
+
+.nav-links li:nth-child(6):hover~.active {
+    top: 56.85%;
+}
+
+.nav-links li:nth-child(7):hover~.active {
+    top: 67.96%;
+}
+
+.nav-links li:nth-child(8):hover~.active {
+    top: 79.07%;
+}
+
+.nav-links li:nth-child(9):hover~.active {
+    top: 90.18%;
 }
 
 /* Content Window */
@@ -125,17 +141,103 @@ body {
     padding: 20px 20px;
 }
 
-.show-content {
+.show-view {
     display: grid;
     grid-template-rows: 25px 40px 25px 1fr 25px 50px;
     height: 100%;
     min-width: 540px;
 }
 
+.movie-view {
+    display: grid;
+    grid-template-rows: 25px 25px 1fr 25px 50px;
+    height: 100%;
+    min-width: 540px;
+}
+
+.short-view {
+    display: grid;
+    grid-template-rows: 25px 25px 1fr 25px 50px;
+    height: 100%;
+    min-width: 540px;
+}
+
+.music-view {
+    display: grid;
+    grid-template-rows: 25px 25px 1fr 25px 50px;
+    height: 100%;
+    min-width: 540px;
+}
+
+.commercial-view {
+    display: grid;
+    grid-template-rows: 25px 25px 1fr 25px 50px;
+    height: 100%;
+    min-width: 540px;
+}
+
+.promo-view {
+    display: grid;
+    grid-template-rows: 25px 25px 1fr 25px 50px;
+    height: 100%;
+    min-width: 540px;
+}
+
+.episode-path-group {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    align-items: center;
+}
+
+.episode-path-group-no-icon {
+    display: grid;
+    grid-template-columns: 0px 1fr;
+    align-items: center;
+}
+
+.episode-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 4px;
+    height: 16px;
+    color: #ff8a00;
+    font-weight: bold;
+    margin-left: 2px;
+    cursor: default;
+}
+
+.general-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    width: 45px;
+    height: 19px;
+}
+
+.long-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    width: 100px;
+    height: 19px;
+}
+
+.longer-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    width: 120px;
+    height: 19px;
+}
+
 .show-data {
     display: grid;
     grid-template-rows: 1fr 1fr;
-    grid-template-columns: 120px 50px 1fr 1fr 1fr 100px;
+    grid-template-columns: 120px 50px 1fr 160px 4fr 100px;
 }
 
 .title-group {
@@ -148,7 +250,7 @@ body {
 }
 
 .medium-text {
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .large-text {
@@ -165,11 +267,83 @@ body {
     padding-right: 5px;
 }
 
+.show-content {
+    height: 366px;
+}
+
+.movie-content {
+    height: 406px;
+}
+
+.short-content {
+    height: 406px;
+}
+
+.music-content {
+    height: 406px;
+}
+
+.commercial-content {
+    height: 406px;
+}
+
+.promo-content {
+    height: 406px;
+}
+
 .content-window {
     border: 1px solid #0d74f5;
     border-radius: 2px;
     padding: 2px 2px;
     margin-bottom: 5px;
+    /* Set a fixed height */
+    overflow-y: auto;
+    /* Add a scrollbar when content exceeds the height */
+
+    /* WebKit browsers (Chrome, Safari) */
+    scrollbar-width: thin;
+    scrollbar-color: #0d74f5 transparent;
+}
+
+/* Firefox */
+.content-window::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* WebKit browsers (Chrome, Safari) */
+.content-window::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    /* Set the radius to make it pill-shaped */
+    background-color: #0d74f5;
+}
+
+/* Firefox */
+.content-window::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    /* Set the radius to make it pill-shaped */
+    background-color: #0d74f5;
+}
+
+/* Remove up and down buttons */
+.content-window::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* Remove up and down arrows for Firefox */
+.content-window::-moz-scrollbar-up,
+.content-window::-moz-scrollbar-down {
+    display: none;
+}
+
+/* Hide the default track */
+.content-window::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+/* Remove up and down arrows */
+.content-window::-webkit-scrollbar-track-piece:start,
+.content-window::-webkit-scrollbar-track-piece:end {
+    background-color: transparent;
 }
 
 .selection-entry {
@@ -179,7 +353,16 @@ body {
     justify-content: center;
 }
 
+.alt-selection-entry {
+    display: grid;
+    grid-template-columns: 20px 100px 22px 100px 1fr;
+    align-items: center;
+    justify-content: center;
+}
+
 .selection-path {
+    display: flex;
+    align-items: center;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -188,7 +371,12 @@ body {
     overflow-x: auto;
     white-space: nowrap;
     position: relative;
-    text-align: center;
+    text-align: left;
+}
+
+.selected-path-div {
+    padding-left: 2px;
+    padding-right: 5px;
 }
 
 .scrollable-div::before,
@@ -216,6 +404,12 @@ body {
 
 .number-input {
     width: 30px;
+    height: 16px;
+}
+
+.movie-input {
+    width: 100px;
+    height: 16px;
 }
 
 .clickable {
@@ -223,18 +417,34 @@ body {
 }
 
 .remove-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background: #ff0000;
     color: #ffffff;
     border: none;
     border-radius: 2px;
-    padding: 2px 2px;
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
-    width: 20px;
+    width: 15px;
+    height: 15px;
+}
+
+.check-button {
+    display: flex;
     justify-content: center;
-    align-content: center;
-    text-align: center;
+    align-items: center;
+    background: #00ff00;
+    color: #ffffff;
+    border: none;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    margin-left: 3px;
 }
 
 .x-align {
@@ -255,6 +465,58 @@ body {
     border: 1px solid #ccc;
     cursor: pointer;
     font-size: 14px;
+}
+
+.text-input {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #0d74f5;
+    border-radius: 2px;
+    padding: 2px 4px;
+}
+
+#check-title-button {
+    margin-left: 5px
+}
+
+.tiny-padding {
+    padding: 2px 2px;
+}
+
+.micro-padding {
+    padding: 1px 1px;
+}
+
+/* CSS for the warning element */
+.warning-icon {
+    display: inline-block;
+    position: relative;
+    font-size: 24px;
+    margin-right: 5px;
+    /* Add a 5px margin between the icon and text */
+    animation: glow 2s infinite;
+    /* Apply the glowing effect animation to the icon */
+}
+
+/* CSS for the glowing effect animation */
+@keyframes glow {
+    0% {
+        color: #ffffff;
+        text-shadow: 0 0 10px 5px #ff8a00;
+        /* Start with a subtle glow effect */
+    }
+
+    50% {
+        color: #ff4500;
+        text-shadow: 0 0 15px 8px #ff4500;
+        /* Increase the glow effect */
+    }
+
+    100% {
+        color: #ffffff;
+        text-shadow: 0 0 10px 5px #ff8a00;
+        /* Return to the original glow effect */
+    }
 }
 
 /* #show-page-error {} */
