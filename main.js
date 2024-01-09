@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const path = require('path');
 
 let mainWindow;
 
@@ -11,7 +12,8 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false
         },
-        autoHideMenuBar: true
+        autoHideMenuBar: true,
+        icon: path.join(__dirname, 'build/saicon.png')
     });
 
     mainWindow.loadFile('index.html');

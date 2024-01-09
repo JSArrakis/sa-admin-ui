@@ -18,5 +18,17 @@
   },
   "dependencies": {
     "jquery": "^3.7.1"
+  },
+  "build": {
+    "appId": "strmasstadmnui.app",
+    "mac": {
+      "icon": "build/saicon.png"
+    },
+    "win": {
+      "icon": "build/saicon.png"
+    },
+    "linux": {
+      "icon": "build/saicon.png"
+    }
   }
 }
