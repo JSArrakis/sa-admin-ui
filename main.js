@@ -18,6 +18,10 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
 
+    mainWindow.webContents.send('load-profile');
+
+    mainWindow.webContents.send('load-home');
+
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
@@ -25,10 +29,6 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow();
-
-    mainWindow.webContents.send('load-profile');
-
-    mainWindow.webContents.send('load-home');
 
     ipcMain.on('open-file-dialog', async (event) => {
         const result = await dialog.showOpenDialog(mainWindow, {
