@@ -1,5 +1,4 @@
 document.getElementById('home-button').addEventListener('click', async function () {
-    possiblySetProfile();
     console.log('Loading content...');
     try {
         // Use await with fs.promises.readFile to read the file content

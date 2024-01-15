@@ -18,9 +18,11 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
 
-    mainWindow.webContents.send('load-profile');
-
-    mainWindow.webContents.send('load-home');
+    mainWindow.webContents.once('did-finish-load', () => {
+        // Send events to the renderer process
+        mainWindow.webContents.send('load-profile');
+        mainWindow.webContents.send('load-home');
+    });
 
     mainWindow.on('closed', function () {
         mainWindow = null;
@@ -30,7 +32,7 @@ function createWindow() {
 app.whenReady().then(() => {
     createWindow();
 
-    ipcMain.on('open-file-dialog', async (event) => {
+    ipcMain.on('open-episodes-dialog', async (event) => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
@@ -42,6 +44,81 @@ app.whenReady().then(() => {
         if (!result.canceled) {
             // Send the selected file path to the renderer process
             event.sender.send('selected-episodes', result.filePaths);
+        }
+    });
+
+    ipcMain.on('open-movies-dialog', async (event) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+
+        if (!result.canceled) {
+            // Send the selected file path to the renderer process
+            event.sender.send('selected-movies', result.filePaths);
+        }
+    });
+
+    ipcMain.on('open-shorts-dialog', async (event) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+
+        if (!result.canceled) {
+            // Send the selected file path to the renderer process
+            event.sender.send('selected-shorts', result.filePaths);
+        }
+    });
+
+    ipcMain.on('open-music-dialog', async (event) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+
+        if (!result.canceled) {
+            // Send the selected file path to the renderer process
+            event.sender.send('selected-music', result.filePaths);
+        }
+    });
+
+    ipcMain.on('open-commercials-dialog', async (event) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+
+        if (!result.canceled) {
+            // Send the selected file path to the renderer process
+            event.sender.send('selected-commercials', result.filePaths);
+        }
+    });
+
+    ipcMain.on('open-promos-dialog', async (event) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+
+        if (!result.canceled) {
+            // Send the selected file path to the renderer process
+            event.sender.send('selected-promos', result.filePaths);
         }
     });
 
@@ -57,6 +134,11 @@ app.whenReady().then(() => {
             // Send the selected file path to the renderer process
             event.sender.send('selected-drive', result.filePaths[0]);
         }
+    });
+
+    ipcMain.on('log-message', (event, message) => {
+        // Log the message to the terminal
+        console.log(message);
     });
 
     app.on('window-all-closed', function () {

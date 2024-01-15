@@ -195,13 +195,13 @@ body {
     min-width: 540px;
 }
 
-.episode-path-group {
+.path-group {
     display: grid;
     grid-template-columns: 16px 1fr;
     align-items: center;
 }
 
-.episode-path-group-no-icon {
+.path-group-no-icon {
     display: grid;
     grid-template-columns: 0px 1fr;
     align-items: center;
@@ -367,7 +367,14 @@ body {
 
 .alt-selection-entry {
     display: grid;
-    grid-template-columns: 20px 100px 22px 100px 1fr;
+    grid-template-columns: 20px 100px 100px 1fr;
+    align-items: center;
+    justify-content: center;
+}
+
+.buffer-selection-entry {
+    display: grid;
+    grid-template-columns: 20px 100px 1fr;
     align-items: center;
     justify-content: center;
 }
@@ -419,7 +426,7 @@ body {
     height: 16px;
 }
 
-.movie-input {
+.media-input {
     width: 100px;
     height: 16px;
 }
@@ -570,4 +577,3 @@ body {
 .orange {
     background: #ffa500;
 }
-
