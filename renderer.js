@@ -7,6 +7,8 @@ let instanceProfile = {
     drives: [], host: "", port: 0
 };
 
+let showExists = false;
+
 let showName = "";
 let showTags = "";
 let episodeList = [];
@@ -99,6 +101,46 @@ function separatePath(path) {
     return fileName;
 }
 
+function createTagArray(tagString) {
+    let tagArray = [];
+    let tags = tagString.split(',');
+    tags.forEach((tag) => {
+        tagArray.push(tag.trim());
+    });
+    return tagArray;
+}
+
 function createAndSendBuffers() {
+
+}
+
+async function displayError(message, type) {
+    let pageError = document.getElementById(type + '-page-error');
+    pageError.style.color = 'red';
+    let warningIcon = document.createElement('div');
+    warningIcon.classList.add('warning-icon', 'glow-animation');
+    warningIcon.innerHTML = '&#9888;';
+
+    // Set the text content for the warning
+    let warningText = document.createTextNode(message);
+
+    // Insert the warning icon and text into the show-page-error div
+    pageError.appendChild(warningIcon);
+    pageError.appendChild(warningText);
+}
+
+async function displaySuccess(message, type) {
+    let pageError = document.getElementById(type + '-page-error');
+    pageError.style.color = 'green';
+    let successIcon = document.createElement('div');
+    successIcon.classList.add('success-icon', 'glow-animation');
+    successIcon.innerHTML = '&#10004;';
+
+    // Set the text content for the warning
+    let successText = document.createTextNode(message);
+
+    // Insert the warning icon and text into the show-page-error div
+    pageError.appendChild(successIcon);
+    pageError.appendChild(successText);
 
 }

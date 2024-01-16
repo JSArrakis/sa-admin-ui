@@ -36,7 +36,7 @@ app.whenReady().then(() => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -51,7 +51,7 @@ app.whenReady().then(() => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -66,7 +66,7 @@ app.whenReady().then(() => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -81,7 +81,7 @@ app.whenReady().then(() => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -96,7 +96,7 @@ app.whenReady().then(() => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -111,7 +111,7 @@ app.whenReady().then(() => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile', 'multiSelections'],
             filters: [
-                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi'] },
+                { name: 'Video Files', extensions: ['mp4', 'webm', 'mkv', 'mov', 'avi', 'm4v'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });

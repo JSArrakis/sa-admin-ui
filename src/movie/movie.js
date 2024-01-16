@@ -1,12 +1,12 @@
 class Movie {
-    constructor(title, tags, path) {
+    constructor(title, tags, path, duration) {
         this.title = title;
         this.loadTitle = "";
         this.alias = "";
         this.imdb = "";
         this.tags = tags;
         this.path = path;
-        this.duration = 0;
+        this.duration = duration;
         this.durationLimit = 0;
         this.collection = "";
         this.collectionSequence = 0;
@@ -91,6 +91,10 @@ document.getElementById('movies-button').addEventListener('click', async functio
             ipcRenderer.send('open-movies-dialog');
         });
 
+        document.getElementById('movie-submit-button').addEventListener('click', function () {
+            constructAndSendMovies();
+        });
+
         // Log a message to the console
         console.log('Content loaded');
     } catch (err) {
@@ -154,7 +158,7 @@ function displayMovies(filePaths) {
         if (movieList.filter((movie) => { return movie.filePath === filePath }).length === 0) {
             let uuid = uuidv4();
             let fileDiv = document.createElement('div');
-            let movieObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "" };
+            let movieObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "", error: "", loadTitle: "", duration: 0 };
 
             movieObject = localizeMoviePaths ? transformPath(movieObject, instanceProfile.drives) : movieObject;
             let moviePath = hideMoviePaths ? movieObject.file : movieObject.filePath;
@@ -163,10 +167,9 @@ function displayMovies(filePaths) {
                             <div class="alt-selection-entry micro-padding" id=${uuid}>
                                 <div class="remove-button" id="button-${uuid}">&#x2716;</div>
                                 <input id="title-${uuid}" class="media-input small-text" type="text" placeholder="Title">
-                                <input id="title-${uuid}" class="media-input small-text" type="text" placeholder="Tags">
+                                <input id="tags-${uuid}" class="media-input small-text" type="text" placeholder="Tags">
                                 <div id="path-group-${uuid}" class="path-group-no-icon">
-                                    <div id="path-warning-${uuid}" class="episode-warning" title="Path not transformed from localization">
-                                    </div>
+                                    <div id="path-warning-${uuid}" class="path-transform-warning" title="Path not transformed from localization"></div>
                                     <div id="path-${uuid}" class="scrollable-div small-text selected-path-div">${moviePath}</div>
                                 </div>
                             </div>
@@ -191,5 +194,127 @@ function displayMovies(filePaths) {
 }
 
 async function constructAndSendMovies() {
+    //get the title and tags for each movie
+    movieList.forEach((movie) => {
+        movie.title = document.getElementById('title-' + movie.uuid).value;
+        movie.tags = document.getElementById('tags-' + movie.uuid).value;
+        movie.loadTitle = movie.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    });
 
+
+    document.getElementById('movie-page-error').innerText = "";
+    let movies = [];
+    //if there are duplicate loadTitles in the list, assign error class to the element
+    let loadTitles = movieList.map((movie) => { return movie.loadTitle });
+    ipcRenderer.send('log-message', loadTitles);
+    let duplicateLoadTitles = loadTitles.filter((loadTitle, index) => { return loadTitles.indexOf(loadTitle) != index });
+    if (duplicateLoadTitles.length > 0) {
+        duplicateLoadTitles.forEach((loadTitle) => {
+            movieList.forEach((movie) => {
+                if (movie.loadTitle === loadTitle) {
+                    document.getElementById(movie.uuid).classList.add('error');
+                }
+            });
+        });
+        displayError("Duplicate titles found", "movie")
+        return;
+    }
+    movieList.forEach((movie) => {
+        // remove special characters and spaces from title
+
+        let hasError = false;
+        // Check if the title is empty
+        if (movie.title === "") {
+            //find element by uuid and add error class
+            document.getElementById("title-" + movie.uuid).style.backgroundColor = "red";
+            hasError = true;
+        }
+        // Check if tags are empty
+        if (movie.tags === "") {
+            //find element by uuid and add error class
+            document.getElementById("tags-" + movie.uuid).style.backgroundColor = "red";
+            hasError = true;
+        }
+        if (hasError) {
+            return;
+        }
+        movies.push(new Movie(movie.title, createTagArray(movie.tags), movie.filePath, movie.duration));
+    });
+    if (movies.length !== movieList.length) {
+        document.getElementById('movie-page-error').innerText = "Some movies are missing title or tags";
+        return;
+    }
+    let requestPath = 'http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/bulk-create-movies';
+    await axios.post(requestPath, movies)
+        .then(response => {
+            handleBulkResponse(response);
+        })
+        .catch(error => {
+            let message = "";
+            if (error.response) {
+                // The server responded with an error status code (4xx or 5xx)
+                if (error.response.data.message) {
+                    message = error.response.data.message;
+                }
+
+                if (error.response.data.errors && error.response.data.errors.length > 0) {
+                    let errorList = error.response.data.errors;
+
+                    ipcRenderer.send('log-message', errorList);
+
+                    for (const error of errorList) {
+                        for (const movie of movieList) {
+                            if (movie.loadTitle === error.LoadTitle) {
+                                document.getElementById("path-" + movie.uuid).innerText = error.Error;
+                                movie.error = error.Error;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else if (error.request) {
+                // The request was made, but no response was received
+                message = 'Network Error: No response received';
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                message = 'Unknown Error: ' + error.message;
+            }
+            displayError(message, "movie");
+        });
 }
+
+async function handleBulkResponse(response) {
+    // handle response
+    if (response.data.createdMovies.length > 0) {
+        //match each createdMovie string with the the corresponding movie in movieList and click the remove button for the corresponding element, and remove the movie from movieList
+        for (const createdMovie of response.data.createdMovies) {
+            for (const movie of movieList) {
+                if (movie.loadTitle === createdMovie) {
+                    document.getElementById('button-' + movie.uuid).click();
+                    //remove the movie from movieList
+                    break;
+                }
+            }
+        }
+
+        //remove the movies from movieList
+        movieList = movieList.filter((movie) => {
+            return !response.data.createdMovies.includes(movie.loadTitle);
+        });
+    }
+
+    // handle errors
+    if (response.data.errors.length > 0) {
+        //match each error string with the the corresponding movie in movieList and add the error class for the corresponding element
+        for (const error of response.data.errors) {
+            for (const movie of movieList) {
+                if (movie.loadTitle === error.LoadTitle) {
+                    document.getElementById("path-" + movie.uuid).innerText = error.Error;
+                    movie.error = error.Error;
+                    break;
+                }
+            }
+        }
+    }
+}
+

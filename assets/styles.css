@@ -207,7 +207,7 @@ body {
     align-items: center;
 }
 
-.episode-warning {
+.path-transform-warning {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -526,6 +526,15 @@ body {
     font-size: 20px;
     margin-right: 5px;
     animation: glow 2s infinite;
+    margin-bottom: 5px;
+}
+
+.success-icon {
+    display: inline-block;
+    position: relative;
+    font-size: 20px;
+    margin-right: 5px;
+    color: #00ff00;
     margin-bottom: 5px;
 }
 

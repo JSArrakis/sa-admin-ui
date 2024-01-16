@@ -15,14 +15,14 @@ class TVShow {
 }
 
 class Episode {
-    constructor(episodeNumber, path) {
+    constructor(episodeNumber, path, duration) {
         this.season = 0;
         this.episode = 0;
         this.episodeNumber = episodeNumber;
         this.path = path;
         this.title = "";
         this.loadTitle = "";
-        this.duration = 0;
+        this.duration = duration;
         this.durationLimit = 0;
         this.tags = [];
     }
@@ -127,7 +127,7 @@ document.getElementById('shows-button').addEventListener('click', async function
             document.getElementById('show-page-error').innerText = "";
             let title = titleElement.value;
             if (title === "") {
-                displayError("Title cannot be empty")
+                displayError("Title cannot be empty", "show");
                 titleElement.style.backgroundColor = "#ff0000";
                 return;
             }
@@ -158,7 +158,7 @@ document.getElementById('shows-button').addEventListener('click', async function
                 getShowResult[0].Episodes.forEach((episode) => {
                     let uuid = uuidv4();
                     let fileDiv = document.createElement('div');
-                    let episodeObject = { uuid: uuid, filePath: episode.Path, basePath: "", file: separatePath(episode.Path), episode: episode.EpisodeNumber };
+                    let episodeObject = { uuid: uuid, filePath: episode.Path, basePath: "", file: separatePath(episode.Path), episode: episode.EpisodeNumber, duration: episode.Duration };
                     let transformedEpisode = localizeShowPaths ? transformShowPath(episodeObject, instanceProfile.drives) : episodeObject;
                     let episodePath = hideShowPaths ? transformedEpisode.file : transformedEpisode.filePath;
                     fileDiv.innerHTML = `
@@ -167,7 +167,7 @@ document.getElementById('shows-button').addEventListener('click', async function
                             <div class="ep-number small-text tiny-horz-padding">Ep.</div>
                             <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=${episode.EpisodeNumber}>
                             <div id=${"path-group-" + uuid} class="path-group-no-icon">
-                                <div id=${"path-warning-" + uuid} class="episode-warning" title="Path not transformed from localization"></div>
+                                <div id=${"path-warning-" + uuid} class="path-transform-warning" title="Path not transformed from localization"></div>
                                 <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
                             </div>
                         </div>`;
@@ -309,7 +309,7 @@ function displayEpisodes(filePaths) {
         if (episodeList.filter((episode) => { return episode.filePath === filePath }).length === 0) {
             let uuid = uuidv4();
             let fileDiv = document.createElement('div');
-            let episodeObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), episode: 0 };
+            let episodeObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), episode: 0, duration: 0 };
             episodeObject = localizeShowPaths ? transformPath(episodeObject, instanceProfile.drives) : episodeObject;
             let episodePath = hideShowPaths ? episodeObject.file : episodeObject.filePath;
             fileDiv.innerHTML = `
@@ -318,7 +318,7 @@ function displayEpisodes(filePaths) {
                             <div class="ep-number small-text tiny-horz-padding">Ep.</div>
                             <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=0>
                             <div id=${"path-group-" + uuid} class="path-group-no-icon">
-                                <div id=${"path-warning-" + uuid} class="episode-warning" title="Path not transformed from localization"></div>
+                                <div id=${"path-warning-" + uuid} class="path-transform-warning" title="Path not transformed from localization"></div>
                                 <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
                             </div>
                         </div>`;
@@ -345,7 +345,7 @@ async function constructAndSendShow() {
     let episodeArray = [];
 
     episodeList.forEach((episode) => {
-        episodeArray.push(new Episode(episode.episode, episode.filePath));
+        episodeArray.push(new Episode(episode.episode, episode.filePath, episode.duration));
     });
 
     let show = new TVShow(showName, createTagArray(showTags));
@@ -353,10 +353,11 @@ async function constructAndSendShow() {
     let requestPath = 'http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/create-show';
     await axios.post(requestPath, show)
         .then(response => {
-            console.log(response);
+            document.getElementById('show-clear-button').click();
+            displaySuccess("Show created successfully", "show");
         })
         .catch(error => {
-            displayError(error)
+            displayError(error, "show")
         });
 }
 
@@ -364,7 +365,7 @@ async function constructAndSendShowUpdate() {
     let episodeArray = [];
 
     episodeList.forEach((episode) => {
-        episodeArray.push(new Episode(episode.episode, episode.filePath));
+        episodeArray.push(new Episode(episode.episode, episode.filePath, episode.duration));
     });
 
     let show = new TVShow(showName, createTagArray(showTags));
@@ -372,35 +373,11 @@ async function constructAndSendShowUpdate() {
     let requestPath = 'http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/update-show';
     await axios.put(requestPath, show)
         .then(response => {
-            document.getElementById('show-tags').disabled = true;
-            document.getElementById('show-submit-button').innerText = "Submit";
-            document.getElementById('show-submit-button').disabled = true;
-            console.log(response);
+            document.getElementById('show-clear-button').click();
+            displaySuccess("Show updated successfully", "show");
         })
         .catch(error => {
-            displayError(error)
+            displayError(error, "show")
         });
 }
 
-function createTagArray(tagString) {
-    let tagArray = [];
-    let tags = tagString.split(',');
-    tags.forEach((tag) => {
-        tagArray.push(tag.trim());
-    });
-    return tagArray;
-}
-
-async function displayError(message) {
-    let showPageError = document.getElementById('show-page-error');
-    let warningIcon = document.createElement('div');
-    warningIcon.classList.add('warning-icon', 'glow-animation');
-    warningIcon.innerHTML = '&#9888;';
-
-    // Set the text content for the warning
-    let warningText = document.createTextNode(message);
-
-    // Insert the warning icon and text into the show-page-error div
-    showPageError.appendChild(warningIcon);
-    showPageError.appendChild(warningText);
-}

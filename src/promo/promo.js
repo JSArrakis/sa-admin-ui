@@ -148,7 +148,7 @@ function displayPromos(filePaths) {
                                 <div class="remove-button" id="button-${uuid}">&#x2716;</div>
                                 <input id="title-${uuid}" class="media-input small-text" type="text" placeholder="Tags">
                                 <div id="path-group-${uuid}" class="path-group-no-icon">
-                                    <div id="path-warning-${uuid}" class="episode-warning" title="Path not transformed from localization">
+                                    <div id="path-warning-${uuid}" class="path-transform-warning" title="Path not transformed from localization">
                                     </div>
                                     <div id="path-${uuid}" class="scrollable-div small-text selected-path-div">${shortPath}</div>
                                 </div>
