@@ -155,31 +155,39 @@ document.getElementById('shows-button').addEventListener('click', async function
                 document.getElementById('show-tags').value = tags;
                 //loop through episodes and add them to the list
                 let targetDiv = document.getElementById('episodes-selection');
-                getShowResult[0].Episodes.forEach((episode) => {
-                    let uuid = uuidv4();
-                    let fileDiv = document.createElement('div');
-                    let episodeObject = { uuid: uuid, filePath: episode.Path, basePath: "", file: separatePath(episode.Path), episode: episode.EpisodeNumber, duration: episode.Duration };
-                    let transformedEpisode = localizeShowPaths ? transformShowPath(episodeObject, instanceProfile.drives) : episodeObject;
-                    let episodePath = hideShowPaths ? transformedEpisode.file : transformedEpisode.filePath;
-                    fileDiv.innerHTML = `
+                getShowResult[0].Episodes.forEach((episode, index) => {
+                    setTimeout(() => {
+                        let uuid = uuidv4();
+                        let fileDiv = document.createElement('div');
+                        let episodeObject = { uuid: uuid, filePath: episode.Path, basePath: "", file: separatePath(episode.Path), episode: episode.EpisodeNumber, duration: episode.Duration };
+                        let transformedEpisode = localizeShowPaths ? transformShowPath(episodeObject, instanceProfile.drives) : episodeObject;
+                        let episodePath = hideShowPaths ? transformedEpisode.file : transformedEpisode.filePath;
+                        fileDiv.innerHTML = `
                         <div class="selection-entry micro-padding" id=${uuid}>
                             <div class="remove-button" id=${"button-" + uuid}>&#x2716;</div>
                             <div class="ep-number small-text tiny-horz-padding">Ep.</div>
                             <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=${episode.EpisodeNumber}>
-                            <div id=${"path-group-" + uuid} class="path-group-no-icon">
+                            <div id=${"path-group-" + uuid} class="path-group-no-icon transparent-div">
                                 <div id=${"path-warning-" + uuid} class="path-transform-warning" title="Path not transformed from localization"></div>
                                 <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
                             </div>
                         </div>`;
-                    targetDiv.appendChild(fileDiv);
-                    episodeList.push(transformedEpisode);
-
-                    document.getElementById("button-" + uuid).addEventListener('click', function () {
-                        document.getElementById(uuid).remove();
-                        episodeList = episodeList.filter((episode) => {
-                            return episode.uuid != uuid;
+                        fileDiv.id = "entry-" + uuid;
+                        fileDiv.classList.add('slide-in-from-right');
+                        fileDiv.addEventListener('animationend', function (event) {
+                            let pathGroupElement = document.getElementById("path-group-" + uuid);
+                            pathGroupElement.classList.add('path-fade-in');
                         });
-                    });
+                        targetDiv.appendChild(fileDiv);
+                        episodeList.push(transformedEpisode);
+
+                        document.getElementById("button-" + uuid).addEventListener('click', function () {
+                            document.getElementById(uuid).remove();
+                            episodeList = episodeList.filter((episode) => {
+                                return episode.uuid != uuid;
+                            });
+                        });
+                    }, index * 100);
                 });
 
             } else if (getShowResult[1].response && getShowResult[1].response.status === 404) {
@@ -305,38 +313,46 @@ function reverseShowTransformPath(episode) {
 
 function displayEpisodes(filePaths) {
     let targetDiv = document.getElementById('episodes-selection');
-    filePaths.forEach((filePath) => {
+    filePaths.forEach((filePath, index) => {
         if (episodeList.filter((episode) => { return episode.filePath === filePath }).length === 0) {
-            let uuid = uuidv4();
-            let fileDiv = document.createElement('div');
-            let episodeObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), episode: 0, duration: 0 };
-            episodeObject = localizeShowPaths ? transformPath(episodeObject, instanceProfile.drives) : episodeObject;
-            let episodePath = hideShowPaths ? episodeObject.file : episodeObject.filePath;
-            fileDiv.innerHTML = `
+            setTimeout(() => {
+                let uuid = uuidv4();
+                let fileDiv = document.createElement('div');
+                let episodeObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), episode: 0, duration: 0 };
+                episodeObject = localizeShowPaths ? transformShowPath(episodeObject, instanceProfile.drives) : episodeObject;
+                let episodePath = hideShowPaths ? episodeObject.file : episodeObject.filePath;
+                fileDiv.innerHTML = `
                         <div class="selection-entry micro-padding" id=${uuid}>
                             <div class="remove-button" id=${"button-" + uuid}>&#x2716;</div>
                             <div class="ep-number small-text tiny-horz-padding">Ep.</div>
                             <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=0>
-                            <div id=${"path-group-" + uuid} class="path-group-no-icon">
+                            <div id=${"path-group-" + uuid} class="path-group-no-icon transparent-div">
                                 <div id=${"path-warning-" + uuid} class="path-transform-warning" title="Path not transformed from localization"></div>
                                 <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
                             </div>
                         </div>`;
-            targetDiv.appendChild(fileDiv);
-            if (localizeShowPaths && episodeObject.basePath === "") {
-                document.getElementById('path-group-' + uuid).classList.remove('path-group-no-icon');
-                document.getElementById('path-group-' + uuid).classList.add('path-group')
-                document.getElementById('path-warning-' + uuid).innerText = '\u26A0'
-            }
-
-            episodeList.push(episodeObject);
-
-            document.getElementById("button-" + uuid).addEventListener('click', function () {
-                document.getElementById(uuid).remove();
-                episodeList = episodeList.filter((episode) => {
-                    return episode.uuid != uuid;
+                fileDiv.id = "entry-" + uuid;
+                fileDiv.classList.add('slide-in-from-right');
+                fileDiv.addEventListener('animationend', function (event) {
+                    let pathGroupElement = document.getElementById("path-group-" + uuid);
+                    pathGroupElement.classList.add('path-fade-in');
                 });
-            });
+                targetDiv.appendChild(fileDiv);
+                if (localizeShowPaths && episodeObject.basePath === "") {
+                    document.getElementById('path-group-' + uuid).classList.remove('path-group-no-icon');
+                    document.getElementById('path-group-' + uuid).classList.add('path-group')
+                    document.getElementById('path-warning-' + uuid).innerText = '\u26A0'
+                }
+
+                episodeList.push(episodeObject);
+
+                document.getElementById("button-" + uuid).addEventListener('click', function () {
+                    document.getElementById(uuid).remove();
+                    episodeList = episodeList.filter((episode) => {
+                        return episode.uuid != uuid;
+                    });
+                });
+            }, index * 100);
         }
     });
 }

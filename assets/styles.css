@@ -310,6 +310,7 @@ body {
     margin-bottom: 5px;
     /* Set a fixed height */
     overflow-y: auto;
+    overflow-x: hidden;
     /* Add a scrollbar when content exceeds the height */
 
     /* WebKit browsers (Chrome, Safari) */
@@ -448,6 +449,24 @@ body {
     cursor: pointer;
     width: 15px;
     height: 15px;
+    padding-bottom: 1px;
+}
+
+.entry-error {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    height: 100%;
+    background: #c00000;
+    color: #ffffff;
+    font-weight: bold;
+    margin-left: 2px;
+    cursor: default;
+}
+
+.error-message {
+    width: 100%;
+    background: #800080;
 }
 
 .check-button {
@@ -494,6 +513,10 @@ body {
     padding: 2px 4px;
 }
 
+.transparent-div {
+    opacity: 0;
+}
+
 #check-title-button {
     margin-left: 5px
 }
@@ -536,6 +559,98 @@ body {
     margin-right: 5px;
     color: #00ff00;
     margin-bottom: 5px;
+}
+
+.error-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.2s ease-in-out forwards;
+}
+
+.error-fade-out {
+    opacity: 1;
+    animation: fadeOut 0.2s ease-in-out forwards;
+}
+
+.path-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.path-fade-out {
+    opacity: 1;
+    animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+.error-view-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        /* Start off-screen to the right */
+    }
+
+    to {
+        transform: translateX(0);
+        /* Slide in to the normal position */
+    }
+}
+
+@keyframes expandFullWidth {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes contractFullWidth {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+.entry-error-expand {
+    animation: expandAnimation .2s forwards;
+}
+
+.entry-error-collapse {
+    animation: expandAnimation .2s forwards;
+}
+
+/* Apply the animation to the sliding element */
+.slide-in-from-right {
+    animation: slideInFromRight 0.5s ease-in-out;
 }
 
 /* CSS for the glowing effect animation */

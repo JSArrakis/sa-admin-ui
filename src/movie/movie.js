@@ -154,41 +154,49 @@ function displayMovies(filePaths) {
     document.getElementById('movie-clear-button').disabled = false;
     document.getElementById('movie-submit-button').disabled = false;
 
-    filePaths.forEach((filePath) => {
+    filePaths.forEach((filePath, index) => {
         if (movieList.filter((movie) => { return movie.filePath === filePath }).length === 0) {
-            let uuid = uuidv4();
-            let fileDiv = document.createElement('div');
-            let movieObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "", error: "", loadTitle: "", duration: 0 };
+            setTimeout(() => {
+                let uuid = uuidv4();
+                let fileDiv = document.createElement('div');
+                let movieObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "", error: "", loadTitle: "", duration: 0 };
 
-            movieObject = localizeMoviePaths ? transformPath(movieObject, instanceProfile.drives) : movieObject;
-            let moviePath = hideMoviePaths ? movieObject.file : movieObject.filePath;
-            fileDiv.innerHTML = `
+                movieObject = localizeMoviePaths ? transformMoviePath(movieObject, instanceProfile.drives) : movieObject;
+                let moviePath = hideMoviePaths ? movieObject.file : movieObject.filePath;
+                fileDiv.innerHTML = `
                         <div>
                             <div class="alt-selection-entry micro-padding" id=${uuid}>
                                 <div class="remove-button" id="button-${uuid}">&#x2716;</div>
                                 <input id="title-${uuid}" class="media-input small-text" type="text" placeholder="Title">
                                 <input id="tags-${uuid}" class="media-input small-text" type="text" placeholder="Tags">
-                                <div id="path-group-${uuid}" class="path-group-no-icon">
+                                <div id="path-group-${uuid}" class="path-group-no-icon transparent-div">
                                     <div id="path-warning-${uuid}" class="path-transform-warning" title="Path not transformed from localization"></div>
                                     <div id="path-${uuid}" class="scrollable-div small-text selected-path-div">${moviePath}</div>
                                 </div>
                             </div>
                         </div>`;
-            targetDiv.appendChild(fileDiv);
-            if (localizeMoviePaths && movieObject.basePath === "") {
-                document.getElementById('path-group-' + uuid).classList.remove('path-group-no-icon');
-                document.getElementById('path-group-' + uuid).classList.add('path-group')
-                document.getElementById('path-warning-' + uuid).innerText = '\u26A0'
-            }
-
-            movieList.push(movieObject);
-
-            document.getElementById("button-" + uuid).addEventListener('click', function () {
-                document.getElementById(uuid).remove();
-                movieList = movieList.filter((movie) => {
-                    return movie.uuid != uuid;
+                fileDiv.id = "entry-" + uuid;
+                fileDiv.classList.add('slide-in-from-right');
+                fileDiv.addEventListener('animationend', function (event) {
+                    let pathGroupElement = document.getElementById("path-group-" + uuid);
+                    pathGroupElement.classList.add('path-fade-in');
                 });
-            });
+                targetDiv.appendChild(fileDiv);
+                if (localizeMoviePaths && movieObject.basePath === "") {
+                    document.getElementById('path-group-' + uuid).classList.remove('path-group-no-icon');
+                    document.getElementById('path-group-' + uuid).classList.add('path-group')
+                    document.getElementById('path-warning-' + uuid).innerText = '\u26A0'
+                }
+
+                movieList.push(movieObject);
+
+                document.getElementById("button-" + uuid).addEventListener('click', function () {
+                    document.getElementById(uuid).remove();
+                    movieList = movieList.filter((movie) => {
+                        return movie.uuid != uuid;
+                    });
+                });
+            }, index * 100);
         }
     });
 }
@@ -265,7 +273,7 @@ async function constructAndSendMovies() {
                     for (const error of errorList) {
                         for (const movie of movieList) {
                             if (movie.loadTitle === error.LoadTitle) {
-                                document.getElementById("path-" + movie.uuid).innerText = error.Error;
+                                appendEntryError(movie.uuid, error.Error)
                                 movie.error = error.Error;
                                 break;
                             }
@@ -309,7 +317,7 @@ async function handleBulkResponse(response) {
         for (const error of response.data.errors) {
             for (const movie of movieList) {
                 if (movie.loadTitle === error.LoadTitle) {
-                    document.getElementById("path-" + movie.uuid).innerText = error.Error;
+                    appendEntryError(movie.uuid, error.Error)
                     movie.error = error.Error;
                     break;
                 }
@@ -318,3 +326,82 @@ async function handleBulkResponse(response) {
     }
 }
 
+async function appendEntryError(uuid, errorMessage) {
+    let pathGroupElement = document.getElementById("path-group-" + uuid);
+    pathGroupElement.addEventListener('animationend', function (event) {
+        ipcRenderer.send('log-message', "path-fade-out for " + uuid + " complete");
+        displayEntryError(pathGroupElement, uuid, errorMessage)
+    });
+    pathGroupElement.classList.add('path-fade-out')
+}
+
+
+async function displayEntryError(pathGroup, uuid, message) {
+    pathGroup.style.display = "none"
+    let fileDiv = document.createElement('div');
+    fileDiv.id = "entry-error-" + uuid;
+    fileDiv.classList.add('entry-error');
+    fileDiv.classList.add('small-text')
+    fileDiv.innerHTML = `
+        <div class="error-view-button toggle-on" id="error-view-button-${uuid}">&#x2716;</div>
+        <div class="error-message scrollable-div" id="error-message-${uuid}">${message}</div>`;
+    pathGroup.parentNode.insertBefore(fileDiv, pathGroup);
+    document.getElementById("error-message-" + uuid).classList.add('entry-error-expand');
+    document.getElementById("error-message-" + uuid).addEventListener('animationend', function () {
+        ipcRenderer.send('log-message', "entry-error-expand for " + uuid + " complete");
+    });
+    document.getElementById("error-view-button-" + uuid).addEventListener('click', function () {
+        setEntryErrorToggle(uuid);
+    });
+}
+
+async function setEntryErrorToggle(uuid) {
+    ipcRenderer.send('log-message', "setEntryErrorToggle for " + uuid);
+    let errorButton = document.getElementById("error-view-button-" + uuid)
+    let pathGroup = document.getElementById("path-group-" + uuid);
+    let errorMessage = document.getElementById("error-message-" + uuid);
+    //get error from movieList
+    if (errorButton.classList.contains('toggle-on')) {
+        ipcRenderer.send('log-message', "currently toggle-on for " + uuid + "error button, setting to toggle-off");
+        errorMessage.addEventListener('animationend', function () {
+            ipcRenderer.send('log-message', "error-fade-out for " + uuid + " complete");
+            if (errorMessage.classList.contains('error-fade-out')) {
+                ipcRenderer.send('log-message', "error-fade-out for " + uuid + " complete");
+                errorMessage.classList.remove('error-fade-out');
+                errorMessage.classList.add('entry-error-collapse');
+            }
+            if (errorMessage.classList.contains('entry-error-collapse')) {
+                ipcRenderer.send('log-message', "entry-error-collapse for " + uuid + " complete");
+                errorMessage.classList.remove('entry-error-collapse');
+                pathGroup.style.display = "grid";
+                pathGroup.classList.remove('path-fade-out');
+                pathGroup.classList.add('path-fade-in');
+            }
+        });
+        errorMessage.classList.remove('error-fade-in');
+        errorMessage.classList.add('error-fade-out');
+        errorButton.classList.remove('toggle-on');
+        errorButton.classList.add('toggle-off');
+        errorButton.innerText = "!";
+    } else {
+        ipcRenderer.send('log-message', "currently toggle-off for " + uuid + "error button, setting to toggle-on");
+        pathGroup.addEventListener('animationend', function (event) {
+            ipcRenderer.send('log-message', "path-fade-in for " + uuid + " complete");
+            if (errorMessage.classList.contains('path-fade-out')) {
+                pathGroup.style.display = "none"
+                errorMessage.addEventListener('animationend', function (event) {
+                    if (event.animationName === 'entry-error-expand') {
+                        errorMessage.classList.add('error-fade-in');
+                    }
+                });
+                errorMessage.classList.remove('entry-error-collapse');
+                errorMessage.classList.add('entry-error-expand');
+                errorButton.classList.remove('toggle-off');
+                errorButton.classList.add('toggle-on');
+            }
+        });
+        pathGroup.classList.remove('path-fade-in');
+        pathGroup.classList.add('path-fade-out');
+        errorButton.innerText = "\u2716";
+    }
+}

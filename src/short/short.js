@@ -140,7 +140,7 @@ function displayShorts(filePaths) {
             let fileDiv = document.createElement('div');
             let shortObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "" };
 
-            shortObject = localizeShortPaths ? transformPath(shortObject, instanceProfile.drives) : shortObject;
+            shortObject = localizeShortPaths ? transformShortPath(shortObject, instanceProfile.drives) : shortObject;
             let shortPath = hideShortPaths ? shortObject.file : shortObject.filePath;
             fileDiv.innerHTML = `
                         <div>

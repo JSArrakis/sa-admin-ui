@@ -140,7 +140,7 @@ function displayPromos(filePaths) {
             let fileDiv = document.createElement('div');
             let promoObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "", type: "P" };
 
-            promoObject = localizePromoPaths ? transformPath(promoObject, instanceProfile.drives) : promoObject;
+            promoObject = localizePromoPaths ? transformPromoPath(promoObject, instanceProfile.drives) : promoObject;
             let promoPath = hidePromoPaths ? promoObject.file : promoObject.filePath;
             fileDiv.innerHTML = `
                         <div>

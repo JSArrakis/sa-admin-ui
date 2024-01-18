@@ -140,7 +140,7 @@ function displayCommercials(filePaths) {
             let fileDiv = document.createElement('div');
             let commercialObject = { uuid: uuid, filePath: filePath, basePath: "", file: separatePath(filePath), title: "", tags: "" };
 
-            commercialObject = localizeCommercialPaths ? transformPath(commercialObject, instanceProfile.drives) : commercialObject;
+            commercialObject = localizeCommercialPaths ? transformCommercialPath(commercialObject, instanceProfile.drives) : commercialObject;
             let commercialPath = hideCommercialPaths ? commercialObject.file : commercialObject.filePath;
             fileDiv.innerHTML = `
                         <div>
