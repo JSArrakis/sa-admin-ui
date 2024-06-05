@@ -1,20 +1,26 @@
 <div class="movie-view">
-    <h3 class="bold-text center-vertical">MOVIES</h3>
-    <div id="movie-path-group" class="center-vertical small-horz-padding space-between">
-        <div>
-            <input id="localize-remote-files" type="checkbox" name="Localize" disabled>
-            <span class="small-text small-horz-padding">Localize Remote File Paths</span>
-            <input id="hide-file-paths" type="checkbox" name="Hide Paths" disabled>
-            <span class="small-text small-horz-padding">Hide File Paths</span>
+    <div class="center-vertical">
+        <h3 class="bold-text center-vertical">MOVIES</h3>
+        <button id="movie-create-button" disabled>Create</button>
+        <button id="movie-manage-button">Manage</button>
+    </div>
+    <div id="movie-work-area" class="movie-create-view">
+        <div id="movie-path-group" class="center-vertical small-horz-padding space-between">
+            <div>
+                <input id="localize-remote-files" type="checkbox" name="Localize" disabled>
+                <span class="small-text small-horz-padding">Localize Remote File Paths</span>
+                <input id="hide-file-paths" type="checkbox" name="Hide Paths" disabled>
+                <span class="small-text small-horz-padding">Hide File Paths</span>
+            </div>
+            <button id="movie-files-button" class="small-text long-button">Select Movies</button>
         </div>
-        <button id="movie-files-button" class="small-text long-button">Select Movies</button>
-    </div>
-    <div id="movies-selection" class="content-window movie-content">
-    </div>
+        <div id="movies-selection" class="content-window movie-content">
+        </div>
 
-    <div class="space-between small-horz-padding">
-        <button id="movie-clear-button" class="small-text general-button" disabled>Clear</button>
-        <button id="movie-submit-button" class="small-text general-button" disabled>Submit</button>
+        <div class="space-between small-horz-padding">
+            <button id="movie-clear-button" class="small-text general-button" disabled>Clear</button>
+            <button id="movie-submit-button" class="small-text general-button" disabled>Submit</button>
+        </div>
+        <div id="movie-page-error" class="center-vertical warning-block medium-text small-horz-padding"></div>
     </div>
-    <div id="movie-page-error" class="center-vertical warning-block medium-text small-horz-padding"></div>
 </div>

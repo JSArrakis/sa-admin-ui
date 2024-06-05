@@ -12,11 +12,29 @@ let showExists = false;
 let showName = "";
 let showTags = "";
 let episodeList = [];
+let showManagementList = [];
+let showManagementCheckTime = 0;
+let showManagementSearched = false;
 let movieList = [];
+let movieManagementList = [];
+let movieManagementCheckTime = 0;
+let movieManagementSearched = false;
 let shortList = [];
+let shortManagementList = [];
+let shortManagementCheckTime = 0;
+let shortManagementSearched = false;
 let musicList = [];
+let musicManagementList = [];
+let musicManagementCheckTime = 0;
+let musicManagementSearched = false;
 let commercialList = [];
+let commercialManagementList = [];
+let commercialManagementCheckTime = 0;
+let commercialManagementSearched = false;
 let promoList = [];
+let promoManagementList = [];
+let promoManagementCheckTime = 0;
+let promoManagementSearched = false;
 
 let localizeShowPaths = false;
 let localizeMoviePaths = false;
@@ -131,6 +149,7 @@ async function displayError(message, type) {
 
 async function displaySuccess(message, type) {
     let pageError = document.getElementById(type + '-page-error');
+    pageError.innerHTML = '';
     pageError.style.color = 'green';
     let successIcon = document.createElement('div');
     successIcon.classList.add('success-icon', 'glow-animation');
@@ -142,5 +161,13 @@ async function displaySuccess(message, type) {
     // Insert the warning icon and text into the show-page-error div
     pageError.appendChild(successIcon);
     pageError.appendChild(successText);
+}
 
+function toggleError(uuid) {
+    var example = document.getElementById("error-message-" + uuid);
+    example.classList.toggle('toggle-error-message');
+}
+
+function getCurrentUnixTime() {
+    return Math.floor(Date.now() / 1000);
 }

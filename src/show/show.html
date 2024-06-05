@@ -1,31 +1,37 @@
 <div class="show-view">
-    <h3 class="bold-text center-vertical">SHOWS</h3>
-    <div class="center-vertical space-between show-data small-horz-padding">
-        <div class="small-text">Title</div>
-        <div></div>
-        <div></div>
-        <div class="small-text">Genre Tags</div>
-        <div></div>
-        <div></div>
+    <div class="center-vertical">
+        <h3 class="bold-text center-vertical">SHOWS</h3>
+        <button id="show-create-button" disabled>Create</button>
+        <button id="show-manage-button">Manage</button>
+    </div>
+    <div id="show-work-area" class="show-create-view">
+        <div class="center-vertical space-between show-data small-horz-padding">
+            <div class="small-text">Title</div>
+            <div></div>
+            <div></div>
+            <div class="small-text">Genre Tags</div>
+            <div></div>
+            <div></div>
 
-        <input id="show-title" class="medium-text text-input" type="text" placeholder="Samurai Jack">
-        <button id="check-title-button" class="small-text">Check</button>
-        <div></div>
-        <input id="show-tags" class="medium-text text-input" type="text" placeholder="cartoon network, animated, 2000s"
-            disabled>
-        <div></div>
-        <button id="show-files-button" class="small-text" disabled>Select Episodes</button>
+            <input id="show-title" class="medium-text text-input" type="text" placeholder="Samurai Jack">
+            <button id="check-title-button" class="small-text">Check</button>
+            <div></div>
+            <input id="show-tags" class="medium-text text-input" type="text"
+                placeholder="cartoon network, animated, 2000s" disabled>
+            <div></div>
+            <button id="show-files-button" class="small-text" disabled>Select Episodes</button>
+        </div>
+        <div id="show-path-group" class="center-vertical small-horz-padding">
+            <input id="localize-remote-files" type="checkbox" name="Localize" disabled>
+            <span class="small-text small-horz-padding">Localize Remote File Paths</span>
+            <input id="hide-file-paths" type="checkbox" name="Hide Paths" disabled>
+            <span class="small-text small-horz-padding">Hide File Paths</span>
+        </div>
+        <div id="episodes-selection" class="content-window show-content"></div>
+        <div class="space-between small-horz-padding">
+            <button id="show-clear-button" class="small-text general-button" disabled>Clear</button>
+            <button id="show-submit-button" class="small-text general-button" disabled>Submit</button>
+        </div>
+        <div id="show-page-error" class="center-vertical warning-block medium-text small-horz-padding"></div>
     </div>
-    <div id="show-path-group" class="center-vertical small-horz-padding">
-        <input id="localize-remote-files" type="checkbox" name="Localize" disabled>
-        <span class="small-text small-horz-padding">Localize Remote File Paths</span>
-        <input id="hide-file-paths" type="checkbox" name="Hide Paths" disabled>
-        <span class="small-text small-horz-padding">Hide File Paths</span>
-    </div>
-    <div id="episodes-selection" class="content-window show-content"></div>
-    <div class="space-between small-horz-padding">
-        <button id="show-clear-button" class="small-text general-button" disabled>Clear</button>
-        <button id="show-submit-button" class="small-text general-button" disabled>Submit</button>
-    </div>
-    <div id="show-page-error" class="center-vertical warning-block medium-text small-horz-padding"></div>
 </div>

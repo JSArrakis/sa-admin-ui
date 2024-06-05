@@ -28,6 +28,8 @@ class Episode {
     }
 }
 
+let showViewToggled = false;
+
 document.getElementById('shows-button').addEventListener('click', async function () {
     console.log('Loading content...');
     try {
@@ -36,6 +38,35 @@ document.getElementById('shows-button').addEventListener('click', async function
 
         // Update the main-content div with the loaded content
         document.getElementById('fileContent').innerHTML = fileContent;
+
+        document.getElementById('show-create-button').addEventListener('click', function () {
+            if (showViewToggled) {
+                loadShowCreateView();
+                showViewToggled = !showViewToggled;
+            }
+            document.getElementById('show-create-button').disabled = true;
+            document.getElementById('show-manage-button').disabled = false;
+        });
+
+        document.getElementById('show-manage-button').addEventListener('click', function () {
+            if (!showViewToggled) {
+                loadShowManageView();
+                showViewToggled = !showViewToggled;
+
+                //if showManagementCheckTime is 0 or if it is greater than 5 minutes, get the movie management list
+                if (showManagementCheckTime === 0 || (Date.now() - showManagementCheckTime) > 300000 * 6) {
+                    showManagementCheckTime = Date.now();
+                    console.log("Refreshing show management list...")
+                    showManagementList = [];
+                    getShowManagementList();
+                } else {
+                    console.log("Show management list refreshed recently, not refreshing")
+                    loadShowManagementView();
+                }
+            }
+            document.getElementById('show-create-button').disabled = false;
+            document.getElementById('show-manage-button').disabled = true;
+        });
 
         document.getElementById('show-files-button').addEventListener('click', function () {
             // Send an IPC message to the main process to open the file dialog
@@ -176,7 +207,7 @@ document.getElementById('shows-button').addEventListener('click', async function
                         fileDiv.classList.add('slide-in-from-right');
                         fileDiv.addEventListener('animationend', function (event) {
                             let pathGroupElement = document.getElementById("path-group-" + uuid);
-                            pathGroupElement.classList.add('path-fade-in');
+                            pathGroupElement.classList.add('fade-in');
                         });
                         targetDiv.appendChild(fileDiv);
                         episodeList.push(transformedEpisode);
@@ -225,6 +256,50 @@ document.getElementById('shows-button').addEventListener('click', async function
     }
 
 });
+
+async function getShowManagementList() {
+    let requestPath = 'http://' + instanceProfile.host + ':' + instanceProfile.port + '/api/admin/get-all-show-data';
+    await axios.get(requestPath)
+        .then(response => {
+            handleShowListResponse(response);
+        })
+        .catch(error => {
+            let message = "";
+            if (error.response) {
+                // The server responded with an error status code (4xx or 5xx)
+                if (error.response.data.message) {
+                    message = error.response.data.message;
+                }
+            } else if (error.request) {
+                // The request was made, but no response was received
+                message = 'Network Error: No response received';
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                message = 'Unknown Error: ' + error.message;
+            }
+            displayError(message, "show");
+        });
+}
+
+async function handleShowListResponse(response) {
+    // handle response
+    if (response.data.length > 0) {
+        response.data.forEach((show) => {
+            let uuid = uuidv4();
+            let showDataObject = {
+                uuid: uuid,
+                title: show.title,
+                tags: show.tags,
+                error: "",
+                loadTitle: show.loadTitle,
+                episodeCount: show.episodeCount,
+                deletable: false
+            };
+            showManagementList.push(showDataObject);
+        });
+        loadShowManagementView();
+    }
+}
 
 async function getShowFromAPI(title) {
     let show = null;
@@ -328,14 +403,14 @@ function displayEpisodes(filePaths) {
                             <input id=${"num-" + uuid} class="number-input small-text" type="text" pattern="[0-9]*" name="episode" value=0>
                             <div id=${"path-group-" + uuid} class="path-group-no-icon transparent-div">
                                 <div id=${"path-warning-" + uuid} class="path-transform-warning" title="Path not transformed from localization"></div>
-                                <div id=${"path-" + uuid} class="scrollable-div small-text selected-path-div">${episodePath}</div>
+                                <div id=${"path-" + uuid} class="scrollable-div smaller-text selected-path-div">${episodePath}</div>
                             </div>
                         </div>`;
                 fileDiv.id = "entry-" + uuid;
                 fileDiv.classList.add('slide-in-from-right');
                 fileDiv.addEventListener('animationend', function (event) {
                     let pathGroupElement = document.getElementById("path-group-" + uuid);
-                    pathGroupElement.classList.add('path-fade-in');
+                    pathGroupElement.classList.add('fade-in');
                 });
                 targetDiv.appendChild(fileDiv);
                 if (localizeShowPaths && episodeObject.basePath === "") {
@@ -397,3 +472,201 @@ async function constructAndSendShowUpdate() {
         });
 }
 
+function loadShowCreateView() {
+    let showWorkArea = document.getElementById('show-work-area');
+    showWorkArea.innerHTML = `
+        <div class="center-vertical space-between show-data small-horz-padding">
+            <div class="small-text">Title</div>
+            <div></div>
+            <div></div>
+            <div class="small-text">Genre Tags</div>
+            <div></div>
+            <div></div>
+
+            <input id="show-title" class="medium-text text-input" type="text" placeholder="Samurai Jack">
+            <button id="check-title-button" class="small-text">Check</button>
+            <div></div>
+            <input id="show-tags" class="medium-text text-input" type="text"
+                placeholder="cartoon network, animated, 2000s" disabled>
+            <div></div>
+            <button id="show-files-button" class="small-text" disabled>Select Episodes</button>
+        </div>
+        <div id="show-path-group" class="center-vertical small-horz-padding">
+            <input id="localize-remote-files" type="checkbox" name="Localize" disabled>
+            <span class="small-text small-horz-padding">Localize Remote File Paths</span>
+            <input id="hide-file-paths" type="checkbox" name="Hide Paths" disabled>
+            <span class="small-text small-horz-padding">Hide File Paths</span>
+        </div>
+        <div id="episodes-selection" class="content-window show-content"></div>
+        <div class="space-between small-horz-padding">
+            <button id="show-clear-button" class="small-text general-button" disabled>Clear</button>
+            <button id="show-submit-button" class="small-text general-button" disabled>Submit</button>
+        </div>
+        <div id="show-page-error" class="center-vertical warning-block medium-text small-horz-padding"></div>`;
+
+    episodeList.forEach((episode) => {
+        insertShowEntry(episode);
+    });
+
+    moviesWithErrors = movieList.filter((movie) => { return movie.error !== "" });
+    if (moviesWithErrors.length > 0) {
+        moviesWithErrors.forEach((movie) => {
+            appendEntryError(movie.uuid, movie.error);
+        });
+    }
+
+    loadCreateControls();
+
+    if (movieList.length > 0) {
+        document.getElementById('localize-remote-files').disabled = false;
+        document.getElementById('hide-file-paths').disabled = false;
+        document.getElementById('movie-clear-button').disabled = false;
+        document.getElementById('movie-submit-button').disabled = false;
+    }
+}
+
+function loadShowManageView() {
+    let showWorkArea = document.getElementById('show-work-area');
+    showWorkArea.innerHTML = `
+        <div id="show-path-group" class="center-vertical small-horz-padding space-between">
+            <div id="show-management-search-group" class="search-group">
+                <input id="show-management-search-field" class="media-input small-text" type="text" placeholder="Title">
+                <button id="show-management-search-button" class="small-text">Search</button>
+            </div>
+            <button id="show-refresh-button" class="small-text long-button">Refresh Shows</button>
+        </div>
+        <div id="shows-selection" class="content-window movie-content"></div>
+        <div id="show-page-error" class="center-vertical warning-block medium-text small-horz-padding"></div>`;
+
+    document.getElementById('show-management-search-button').addEventListener('click', function () {
+        document.getElementById('show-page-error').innerText = "";
+        let searchField = document.getElementById('show-management-search-field');
+        let searchValue = searchField.value;
+        if (searchValue === "") {
+            if (movieManagementSearched === false) {
+                displayError("Search field is empty", "show");
+                return;
+            } else {
+                movieManagementSearched = false;
+                document.getElementById('shows-selection').innerHTML = "";
+                loadShowManagementView();
+            }
+        } else {
+            let foundMovies = movieManagementList
+                .filter((movie) => {
+                    //make searchValue lowercase and remove spaces and special characters
+                    return movie.loadTitle.toLowerCase().includes(searchValue.toLowerCase().replace(/\s/g, '').replace(/[^a-zA-Z0-9]/g, ''));
+                });
+            console.log("Movies found: " + foundMovies.length);
+            if (foundMovies.length === 0) {
+                // employ levenshtein distance to find the closest matches
+                foundMovies = findClosestMatch(searchValue);
+                console.log("Closest matches found: " + foundMovies.length)
+            }
+            if (foundMovies.length > 0) {
+                document.getElementById('movies-selection').innerHTML = "";
+                //insert the found movies
+                loadShowManagementSearches(foundMovies);
+                movieManagementSearched = true;
+            } else {
+                displayError("No movies found for search", "movie");
+            }
+        }
+    });
+}
+
+async function insertShowEntry(showObject) {
+    let targetDiv = document.getElementById('shows-selection');
+    targetDiv.innerHTML = `
+        <div class="alt-selection-entry micro-padding" id=${showObject.uuid}>
+            <div class="remove-button" id="button-${showObject.uuid}">&#x2716;</div>
+            <input id="title-${showObject.uuid}" class="media-input small-text" type="text" placeholder="Title">
+            <input id="tags-${showObject.uuid}" class="media-input small-text" type="text" placeholder="Tags">
+            <div id="path-group-${showObject.uuid}" class="path-group-no-icon transparent-div">
+                <div id="path-warning-${showObject.uuid}" class="path-transform-warning" title="Path not transformed from localization"></div>
+                <div id="path-${showObject.uuid}" class="scrollable-div smaller-text selected-path-div">${moviePath}</div>
+            </div>
+        </div>`;
+    targetDiv.id = "entry-" + showObject.uuid;
+    targetDiv.classList.add('slide-in-from-right');
+    targetDiv.addEventListener('animationend', function (event) {
+        let pathGroupElement = document.getElementById("path-group-" + showObject.uuid);
+        pathGroupElement.classList.add('fade-in');
+    });
+    targetDiv.appendChild(targetDiv);
+    if (showObject.title !== "") {
+        document.getElementById('title-' + showObject.uuid).value = showObject.title;
+    }
+    if (showObject.tags !== "") {
+        document.getElementById('tags-' + showObject.uuid).value = showObject.tags;
+    }
+    if (localizeMoviePaths && showObject.basePath === "") {
+        document.getElementById('path-group-' + showObject.uuid).classList.remove('path-group-no-icon');
+        document.getElementById('path-group-' + showObject.uuid).classList.add('path-group')
+        document.getElementById('path-warning-' + showObject.uuid).innerText = '\u26A0'
+    }
+
+    //if movieList doesnt already contain the movieObject, add it
+    if (movieList.filter((movie) => { return movie.filePath === movieObject.filePath }).length === 0) {
+        movieList.push(movieObject);
+    }
+
+    document.getElementById("button-" + movieObject.uuid).addEventListener('click', function () {
+        document.getElementById(movieObject.uuid).remove();
+        movieList = movieList.filter((movie) => {
+            return movie.uuid != movieObject.uuid;
+        });
+    });
+}
+
+async function loadShowManagementView() {
+    showManagementList.forEach((show, index) => {
+        setTimeout(() => {
+            insertShowManagementEntry(show);
+        }, index * 100);
+    });
+}
+
+async function insertShowManagementEntry(ShowDataObject) {
+    let targetDiv = document.getElementById('shows-selection');
+    let fileDiv = document.createElement('div');
+    fileDiv.innerHTML =
+        `<div class="show-management-entry micro-padding" id=${ShowDataObject.uuid}>
+            <div class="update-button smaller-text orange update-button-color" id="update-button-${ShowDataObject.uuid}">UPDATE</div>
+            <div class="delete-switch" id="delete-switch-${ShowDataObject.uuid}">
+                <div class="delete-slider" id="delete-slider-${ShowDataObject.uuid}"></div>
+            </div>
+            <div id="title-${ShowDataObject.uuid}" class="management-title scrollable-div small-text">${ShowDataObject.title}</div>
+            <div id="episode-count-${ShowDataObject.uuid}" class="small-text">Eps. ${ShowDataObject.episodeCount}</div>
+            <input id="tags-${ShowDataObject.uuid}" class="movie-management-tags small-text" type="text" value="${ShowDataObject.tags}" placeholder="Tags">
+        </div>`;
+    fileDiv.id = "entry-" + ShowDataObject.uuid;
+    fileDiv.classList.add('slide-in-from-right');
+    fileDiv.addEventListener('animationend', function (event) {
+        let pathGroupElement = document.getElementById("path-group-" + ShowDataObject.uuid);
+        pathGroupElement.classList.add('fade-in');
+    });
+    targetDiv.appendChild(fileDiv);
+    const updateButton = document.getElementById(`update-button-${ShowDataObject.uuid}`);
+    updateButton.addEventListener('click', function () {
+        if (updateButton.innerText === "UPDATE") {
+            updateShow(ShowDataObject);
+        } else {
+            deleteShow(ShowDataObject);
+        }
+    });
+
+    const switchElement = document.getElementById(`delete-switch-${movieObject.uuid}`);
+    switchElement.addEventListener('click', function () {
+        switchElement.classList.toggle('on');
+        if (switchElement.classList.contains('on')) {
+            document.getElementById(`update-button-${movieObject.uuid}`).classList.remove('update-button-color');
+            document.getElementById(`update-button-${movieObject.uuid}`).classList.add('delete-button-color');
+            document.getElementById(`update-button-${movieObject.uuid}`).innerText = "DELETE";
+        } else {
+            document.getElementById(`update-button-${movieObject.uuid}`).classList.remove('delete-button-color');
+            document.getElementById(`update-button-${movieObject.uuid}`).classList.add('update-button-color');
+            document.getElementById(`update-button-${movieObject.uuid}`).innerText = "UPDATE";
+        }
+    });
+}
