@@ -4,6 +4,9 @@ const path = require('path');
 let mainWindow;
 
 function createWindow() {
+    // Here, we are grabbing the React url from the env (which is on the start script)
+    const startUrl = process.env.ELECTRON_START_URL;
+
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
@@ -15,8 +18,11 @@ function createWindow() {
         autoHideMenuBar: true,
         icon: path.join(__dirname, 'build/saicon.png')
     });
+    mainWindow.loadURL(startUrl);
+    //mainWindow.loadFile(startUrl);
 
-    mainWindow.loadFile('index.html');
+    // Open the DevTools.
+    //mainWindow.webContents.openDevTools({ mode: 'detach' });
 
     mainWindow.webContents.once('did-finish-load', () => {
         // Send events to the renderer process
