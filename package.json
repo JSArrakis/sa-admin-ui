@@ -5,8 +5,8 @@
   "main": "src/electron/main.js",
   "private": true,
   "scripts": {
-    "start:electron": "ELECTRON_START_URL=http://localhost:3000 electron .",
-    "start:react": "env BROWSER=none react-app-rewired start",
+    "start:electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
+    "start:react": "cross-env BROWSER=none react-app-rewired start",
     "start": "concurrently  \"npm run start:react\" \"wait-on http://127.0.0.1:3000 && npm run start:electron\"",
     "build:react": "react-app-rewired build",
     "test:react": "react-app-rewired test"
