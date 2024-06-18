@@ -6,6 +6,7 @@ let mainWindow;
 function createWindow() {
     // Here, we are grabbing the React url from the env (which is on the start script)
     const startUrl = process.env.ELECTRON_START_URL;
+    const startFile = process.env.ELECTRON_START_FILE;
 
     mainWindow = new BrowserWindow({
         width: 800,
@@ -18,9 +19,13 @@ function createWindow() {
         autoHideMenuBar: true,
         icon: path.join(__dirname, 'build/saicon.png')
     });
-    mainWindow.loadURL(startUrl);
-    //mainWindow.loadFile(startUrl);
-
+    if (startUrl) {
+        mainWindow.loadURL(startUrl);
+    }
+    if (startFile) {
+        mainWindow.loadFile(startFile);
+    }
+    
     // Open the DevTools.
     //mainWindow.webContents.openDevTools({ mode: 'detach' });
 

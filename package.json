@@ -6,26 +6,51 @@
   "private": true,
   "scripts": {
     "start:electron": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
+    "start:electron-legacy": "cross-env ELECTRON_START_FILE=index.html electron .",
     "start:react": "cross-env BROWSER=none react-app-rewired start",
     "start": "concurrently  \"npm run start:react\" \"wait-on http://127.0.0.1:3000 && npm run start:electron\"",
+    "start:legacy": "npm run start:electron-legacy",
     "build:react": "react-app-rewired build",
-    "test:react": "react-app-rewired test"
+    "test:react": "react-app-rewired test",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "keywords": [],
   "author": "JSArrakis",
   "license": "LGPL-3.0-or-later",
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@chromatic-com/storybook": "^1.5.0",
+    "@storybook/addon-essentials": "^8.1.10",
+    "@storybook/addon-interactions": "^8.1.10",
+    "@storybook/addon-links": "^8.1.10",
+    "@storybook/addon-onboarding": "^8.1.10",
+    "@storybook/addon-themes": "^8.1.10",
+    "@storybook/blocks": "^8.1.10",
+    "@storybook/preset-create-react-app": "^8.1.10",
+    "@storybook/react": "^8.1.10",
+    "@storybook/react-webpack5": "^8.1.10",
+    "@storybook/test": "^8.1.10",
     "axios": "^1.6.4",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^28.1.1",
     "electron-reload": "^2.0.0-alpha.1",
+    "eslint-plugin-storybook": "^0.8.0",
+    "prop-types": "^15.8.1",
     "react-app-rewired": "^2.2.1",
+    "storybook": "^8.1.10",
     "uuid": "^9.0.1",
-    "wait-on": "^7.2.0"
+    "wait-on": "^7.2.0",
+    "webpack": "^5.92.0"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@fontsource/material-icons": "^5.0.18",
+    "@fontsource/roboto": "^5.0.13",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/material": "^5.15.20",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -55,7 +80,8 @@
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "plugin:storybook/recommended"
     ]
   },
   "browserslist": {
