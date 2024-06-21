@@ -1,9 +1,9 @@
 import { Typography } from "@mui/material"
 
-export const Home = () => {
+export const Movies = () => {
     return (
         <Typography>
-            Home
+            Movies
         </Typography>
     );
 };

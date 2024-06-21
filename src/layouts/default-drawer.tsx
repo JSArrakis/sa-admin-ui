@@ -14,23 +14,29 @@ import {
     TheaterComedy
 } from '@mui/icons-material';
 import React from 'react';
+import { useNavigate } from "react-router-dom";
+import { routesConfig } from '../features/page-routing';
 
 interface Item {
     label: string;
     icon: React.FC;
     onClick?: () => void;
+    routePath?: string;
 }
 
 export const DefaultDrawer = () => {
+    const navigate = useNavigate();
 
     const upperItems: Item[] = [
         {
             label: 'Home',
-            icon: Home
+            icon: Home,
+            routePath: routesConfig.HOME.path
         },
         {
             label: 'Movies',
-            icon: Theaters
+            icon: Theaters,
+            routePath: routesConfig.MOVIES.path
         },
         {
             label: 'Shows',
@@ -61,13 +67,17 @@ export const DefaultDrawer = () => {
         }
     ]
 
+    const onClick = (item: Item) => {
+        item.onClick && item.onClick();
+        item.routePath && navigate(item.routePath);
+    }
 
     const renderItem = (item: Item, key: number) => (
         <DrawerItemButton
             key={key}
             iconComponent={item.icon}
             label={item.label}
-            onClick={item.onClick}
+            onClick={() => onClick(item)}
         />
     );
 
